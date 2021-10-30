@@ -1,7 +1,13 @@
 const express = require('express')
 const app = express()
 
-const {verifyContentType, parseDataByType} = require('./util')
+const {
+  verifyContentType, 
+  parseDataByType, 
+  createPartition, 
+  checkIfPartitionExists,
+  createMessage
+} = require('./util')
 
  
 app.get('/', function (req, res) {
@@ -9,42 +15,75 @@ app.get('/', function (req, res) {
 })
 
 app.post('/create-partition', (req, res) => {
-  res.sendStatus(200)
+
+  const partition = req.headers['partition']
+  if(partition === undefined){
+    res.send("400 Partition missing from header")
+  }
+  else{
+
+    //True if partition was created successfully, false otherwise
+    result = createPartition(partition)
+
+    if(!result){
+      res.send("400 Partition already exists")
+    }
+    else{
+      res.sendStatus(200)
+    }
+  }
 })
 
 app.post('/post-data', async (req, res) => {
   const contentType = req.headers['content-type']
   const partition = req.headers['partition']
   const host = req.hostname
-  
-  const buffer = []
-  for await (const chunk of req) {
-    buffer.push(chunk)
-  }
 
-  const data = Buffer.concat(buffer).toString()
-
-  //console.log('datatype:', contentType, ', \npartition:', partition, ', \nhost:', host, ', \ndata:', data)
-
-  /*
-  When csv or tsv files are sent they are multipart form data.
-  We use this function to get the proper format type
-  (json, xml, tsv or csv)
-  */
-  type = verifyContentType(contentType, data)
-  if(type === "fail"){
-    res.sendStatus(422)
+  if(!checkIfPartitionExists(partition)){
+    res.send("400 Partition does not exist")
   }
   else{
-  /*
 
-  */
-  parsedData = parseDataByType(type, data)
-  console.log(parsedData)
+    /*
+    Grab de data from the request
+    */
+    const buffer = []
+    for await (const chunk of req) {
+      buffer.push(chunk)
+    }
+    const data = Buffer.concat(buffer).toString()
+   
+    /*
+    When csv or tsv files are sent they are multipart form data.
+    We use this function to get the proper format type
+    (json, xml, tsv or csv)
+    */
+    const type = verifyContentType(contentType, data)
+    if(type === "fail"){
+      res.sendStatus(422)
+    }
+    else{
+      /*
+        We parse data into a Json object.
+      */
+      parsedData = parseDataByType(type, data)
+      console.log(parsedData)
 
-  
+      /*
+        We create json file in the repository
+        result = true / if successful
+      */
+      const result = createMessage(partition, parsedData)
+      
+      if(!result){
+        res.sendStatus(500)
+      }
+      else{
 
-  res.sendStatus(200)
+        //TODO Alert subscribers 
+        res.sendStatus(200)
+      }
+    }
   }
 })
  

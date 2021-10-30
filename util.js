@@ -1,6 +1,7 @@
 const parseXml = require('xml2js').parseString;
 const parseCsv = require("csvtojson");
 const { tsv2json, json2tsv } = require('tsv-json')
+const fs = require('fs');
 
 function verifyContentType(contentType, data){
 
@@ -69,4 +70,59 @@ function tsvToJson(data){
     return tsv2json(processedData)
 }
 
-module.exports = {verifyContentType, parseDataByType}
+function createPartition(partitionName){
+
+    if(checkIfFolderExists(partitionName)){
+        //Folder exists
+        return false
+    }
+    else{
+        //Folder doesn't exist so we crate it
+        fs.mkdirSync('./queue/' + partitionName, { recursive: true });
+        return true
+    }
+}
+
+function checkIfPartitionExists(partitionName){
+    return checkIfFolderExists(partitionName)
+}
+
+function checkIfFolderExists(folderName){
+
+    const dir = './queue/' + folderName
+
+    if (fs.existsSync(dir)){
+        return true
+    }
+    else{
+        return false
+    }
+}
+
+function createMessage(partition, data){
+    // stringify JSON Object
+    const stringData = JSON.stringify(data)
+
+    const timeStamp = new Date().valueOf();
+    const fileName = "./queue/" + partition + "/" + timeStamp + ".json"
+
+    console.log(fileName)
+
+
+    return fs.writeFile(fileName, stringData, 'utf8', function (err) {
+        if (err) {
+            return false
+        }
+        else{
+            return true
+        }
+    })
+}
+
+module.exports = {
+    verifyContentType, 
+    parseDataByType, 
+    createPartition, 
+    checkIfPartitionExists,
+    createMessage
+}

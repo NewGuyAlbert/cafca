@@ -119,10 +119,50 @@ function createMessage(partition, data){
     })
 }
 
+function subscribeUser(host, partition){
+    const data = fs.readFileSync('subscribers.json');
+    let subscribers = JSON.parse(data)
+
+    console.log(subscribers)
+
+    let alreadySubscribed = false
+    try{
+        subscribers.subscriberList[host].forEach(function(data) {
+            if(data === partition){
+                alreadySubscribed = true
+                return
+            }
+        })
+    }
+    catch(err){}
+
+    if(alreadySubscribed){
+        return 1
+    }
+    else if(subscribers.subscriberList[host] === undefined){
+        subscribers.subscriberList[host] = [partition]
+    }
+    else{
+       subscribers.subscriberList[host] = [...subscribers.subscriberList[host], partition]
+    }
+
+    let stringData = JSON.stringify(subscribers)
+    try{
+        fs.writeFileSync('subscribers.json', stringData)
+        return 2
+    }
+    catch(err){
+        console.log(err)
+        return 0
+    }
+    
+}
+
 module.exports = {
-    verifyContentType, 
-    parseDataByType, 
-    createPartition, 
+    verifyContentType,
+    parseDataByType,
+    createPartition,
     checkIfPartitionExists,
-    createMessage
+    createMessage,
+    subscribeUser
 }

@@ -3,7 +3,7 @@ const app = express()
 
 const {
   verifyContentType, 
-  parseDataByType, 
+  parseJSONByType, 
   createPartition, 
   checkIfPartitionExists,
   createMessage,
@@ -75,7 +75,6 @@ app.post('/post-data', async (req, res) => {
     res.send("400 Partition does not exist")
   }
   else{
-
     /*
     Grab de data from the request
     */
@@ -84,7 +83,6 @@ app.post('/post-data', async (req, res) => {
       buffer.push(chunk)
     }
     const data = Buffer.concat(buffer).toString()
-   
     /*
     When csv or tsv files are sent they are multipart form data.
     We use this function to get the proper format type
@@ -98,23 +96,24 @@ app.post('/post-data', async (req, res) => {
       /*
         We parse data into a Json object.
       */
-      parsedData = parseDataByType(type, data)
-      console.log(parsedData)
+      parseJSONByType(type, data).then(async (resultData) => {
+        const parsedData = { "data": resultData }
+          /*
+            We create json file in the repository
+            result = true / if successful
 
-      /*
-        We create json file in the repository
-        result = true / if successful
-      */
-      const result = createMessage(partition, parsedData)
-      
-      if(!result){
+          */
+          await createMessage(partition, parsedData)
+
+          //TODO Alert subscribers 
+          res.sendStatus(200)
+        
+      }).catch(e => {
+        console.log('error while parsing data', e)
         res.sendStatus(500)
-      }
-      else{
+      })
 
-        //TODO Alert subscribers 
-        res.sendStatus(200)
-      }
+      
     }
   }
 })

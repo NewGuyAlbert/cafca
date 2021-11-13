@@ -1,7 +1,11 @@
 const parseXml = require('xml2js').parseString;
 const parseCsv = require("csvtojson");
 const { tsv2json, json2tsv } = require('tsv-json')
+const js2xml = require('js2xmlparser');
 const fs = require('fs');
+
+const test_json = require('./queue/netflix/1635711029660.json')
+const jsonObj = {"name":"John", "age":30, "car":null}
 
 function verifyContentType(contentType, data){
 
@@ -22,14 +26,14 @@ function verifyContentType(contentType, data){
     }
 }
 
-function parseDataByType(type, data){
+async function parseJSONByType(type, data){
     switch(type) {
         case 'json':
             return parseToJson(data)
         case 'xml':
             return xmlToJson(data)
         case 'csv':
-            return csvToJson(data)
+            return await csvToJson(data)
         case 'tsv':
             return tsvToJson(data)
     }
@@ -45,30 +49,69 @@ function xmlToJson(data){
     })
     return payload
 }
-function csvToJson(data){
+async function csvToJson(data){
     //We need to cut the begginin and end and leave only the data
-    data = data.split('\n')
+    data = data.split('\r\n')
     data.splice(0,4)
     data.splice(-2)
     
     let processedData = data.join('\n')
-    let payload
     parseCsv().fromString(processedData).then((jsonObj) => {
-        console.log(jsonObj)
-        payload = jsonObj
+        return jsonObj
+    }).catch((error) => {
+        console.log('error while getting csv to json', error)
+        return "error"
     })
-    return payload
+
+    return await parseCsv().fromString(processedData)
 }
 function tsvToJson(data){
-    //We need to cut the begginin and end and leave only the data
-    data = data.split('\n')
-    data.splice(0,4)
-    data.splice(-2)
-    
-    let processedData = data.join('\n')
-    console.log(processedData)
-    return tsv2json(processedData)
+    //TODO: get rid of fucking /r 
+    data = data.split('\n');
+    data.splice(0,4);
+    data.splice(-2);
+    const headers = data.shift().split('\t');
+    const result = data.map(line => {
+      const data = line.split('\t');
+      return headers.reduce((obj, nextKey, index) => {
+        obj[nextKey] = data[index];
+        return obj;
+      }, {});
+    })
+    return result
 }
+
+function parseDataByJson(dataType, data){
+    switch(dataType){
+        case 'json':
+            return parseToJson(data)
+        case 'xml':
+            return jsonToXml(data)
+        case 'csv':
+            return jsonToCsv(data)
+        case 'tsv':
+            return jsonToTsv(data)
+    }
+}
+
+function jsonToXml(data){
+    let result = ''
+    try{
+        result = js2xml.parse("data", data)
+    } catch(e) {
+        result = "Error parsing into XML form."
+    }
+    return result
+}
+
+function jsonToCsv(data){
+    console.log(data)
+}
+
+function jsonToTsv(data){
+
+}
+
 
 function createPartition(partitionName){
 
@@ -99,23 +142,19 @@ function checkIfFolderExists(folderName){
     }
 }
 
-function createMessage(partition, data){
+async function createMessage(partition, data){
     // stringify JSON Object
-    const stringData = JSON.stringify(data)
+    const stringData = JSON.stringify(data);
 
     const timeStamp = new Date().valueOf();
-    const fileName = "./queue/" + partition + "/" + timeStamp + ".json"
+    const fileName = "./queue/" + partition + "/" + timeStamp + ".json";
 
-    console.log(fileName)
-
-
-    return fs.writeFile(fileName, stringData, 'utf8', function (err) {
-        if (err) {
-            return false
-        }
-        else{
-            return true
-        }
+    return fs.writeFile(fileName, stringData, {
+        encoding: "utf8",
+        flag: "w+"
+    }, (err) => {
+        if(err) throw err;
+        console.log('successfully written to a file');
     })
 }
 
@@ -159,9 +198,9 @@ function subscribeUser(host, partition){
 }
 
 module.exports = {
-    verifyContentType,
-    parseDataByType,
-    createPartition,
+    verifyContentType, 
+    parseJSONByType, 
+    createPartition, 
     checkIfPartitionExists,
     createMessage,
     subscribeUser

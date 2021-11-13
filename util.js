@@ -4,8 +4,8 @@ const { tsv2json, json2tsv } = require('tsv-json')
 const js2xml = require('js2xmlparser');
 const fs = require('fs');
 
-const test_json = require('./queue/netflix/1635711029660.json')
-const jsonObj = {"name":"John", "age":30, "car":null}
+// const test_json = require('./queue/netflix/1635711029660.json')
+// const jsonObj = {"name":"John", "age":30, "car":null}
 
 function verifyContentType(contentType, data){
 
@@ -66,10 +66,18 @@ async function csvToJson(data){
     return await parseCsv().fromString(processedData)
 }
 function tsvToJson(data){
+    
     //TODO: get rid of fucking /r 
-    data = data.split('\n');
+    data = data.split('\r\n');
+
+    console.log("reeeee")
+    console.log(data)
+    console.log("reeeee")
+
+
     data.splice(0,4);
     data.splice(-2);
+    
     const headers = data.shift().split('\t');
     const result = data.map(line => {
       const data = line.split('\t');

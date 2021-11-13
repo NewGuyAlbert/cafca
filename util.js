@@ -1,11 +1,9 @@
 const parseXml = require('xml2js').parseString;
 const parseCsv = require("csvtojson");
-const { tsv2json, json2tsv } = require('tsv-json')
-const js2xml = require('js2xmlparser');
+const json2xml = require('js2xmlparser');
+const json2csv = require('json2csv');
 const fs = require('fs');
 
-const test_json = require('./queue/netflix/1635711029660.json')
-const jsonObj = {"name":"John", "age":30, "car":null}
 
 function verifyContentType(contentType, data){
 
@@ -66,8 +64,7 @@ async function csvToJson(data){
     return await parseCsv().fromString(processedData)
 }
 function tsvToJson(data){
-    //TODO: get rid of fucking /r 
-    data = data.split('\n');
+    data = data.split('\r\n');
     data.splice(0,4);
     data.splice(-2);
     const headers = data.shift().split('\t');
@@ -84,7 +81,7 @@ function tsvToJson(data){
 function parseDataByJson(dataType, data){
     switch(dataType){
         case 'json':
-            return parseToJson(data)
+            return data
         case 'xml':
             return jsonToXml(data)
         case 'csv':
@@ -97,7 +94,7 @@ function parseDataByJson(dataType, data){
 function jsonToXml(data){
     let result = ''
     try{
-        result = js2xml.parse("data", data)
+        result = json2xml.parse(data)
     } catch(e) {
         result = "Error parsing into XML form."
     }
@@ -105,11 +102,28 @@ function jsonToXml(data){
 }
 
 function jsonToCsv(data){
-    console.log(data)
+    const jsonData = data.data
+    let headers = Object.keys(jsonData[0])
+    const csvData = json2csv.parse(jsonData, headers)
+    return csvData
 }
 
 function jsonToTsv(data){
-
+   const jsonArray = data.data
+   let tsvResult = ''
+   const titles = Object.keys(jsonArray[0])
+   titles.forEach( (title, index) => {
+    tsvResult += (index !== titles.length-1 ? `${title}\t` : `${title}\r\n`)
+   })
+   jsonArray.forEach((content, index) => {
+       let row = ''
+       for(let title in content){
+           row += (row === '' ? `${content[title]}` : `\t${content[title]}`)
+       }
+       tsvResult += (index !== jsonArray.length-1 ? `${row}\r\n` : `${row}`)
+   })
+   console.log('tsv result', tsvResult)
+   return tsvResult
 }
 
 
@@ -203,5 +217,6 @@ module.exports = {
     createPartition, 
     checkIfPartitionExists,
     createMessage,
-    subscribeUser
+    subscribeUser,
+    parseDataByJson
 }

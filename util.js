@@ -1,7 +1,11 @@
 const parseXml = require('xml2js').parseString;
 const parseCsv = require("csvtojson");
 const { tsv2json, json2tsv } = require('tsv-json')
+const js2xml = require('js2xmlparser');
 const fs = require('fs');
+
+const test_json = require('./queue/netflix/1635711029660.json')
+const jsonObj = {"name":"John", "age":30, "car":null}
 
 function verifyContentType(contentType, data){
 
@@ -22,7 +26,7 @@ function verifyContentType(contentType, data){
     }
 }
 
-async function parseDataByType(type, data){
+async function parseJSONByType(type, data){
     switch(type) {
         case 'json':
             return parseToJson(data)
@@ -62,12 +66,10 @@ async function csvToJson(data){
     return await parseCsv().fromString(processedData)
 }
 function tsvToJson(data){
-    //We need to cut the begginin and end and leave only the data
+    //TODO: get rid of fucking /r 
     data = data.split('\n');
     data.splice(0,4);
     data.splice(-2);
-
-
     const headers = data.shift().split('\t');
     const result = data.map(line => {
       const data = line.split('\t');
@@ -76,10 +78,40 @@ function tsvToJson(data){
         return obj;
       }, {});
     })
-    console.log(result)
-
     return result
 }
+
+function parseDataByJson(dataType, data){
+    switch(dataType){
+        case 'json':
+            return parseToJson(data)
+        case 'xml':
+            return jsonToXml(data)
+        case 'csv':
+            return jsonToCsv(data)
+        case 'tsv':
+            return jsonToTsv(data)
+    }
+}
+
+function jsonToXml(data){
+    let result = ''
+    try{
+        result = js2xml.parse("data", data)
+    } catch(e) {
+        result = "Error parsing into XML form."
+    }
+    return result
+}
+
+function jsonToCsv(data){
+    console.log(data)
+}
+
+function jsonToTsv(data){
+
+}
+
 
 function createPartition(partitionName){
 
@@ -128,7 +160,7 @@ async function createMessage(partition, data){
 
 module.exports = {
     verifyContentType, 
-    parseDataByType, 
+    parseJSONByType, 
 
     createPartition, 
     checkIfPartitionExists,

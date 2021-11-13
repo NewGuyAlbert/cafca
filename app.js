@@ -3,7 +3,7 @@ const app = express()
 
 const {
   verifyContentType, 
-  parseDataByType, 
+  parseJSONByType, 
   createPartition, 
   checkIfPartitionExists,
   createMessage
@@ -64,7 +64,7 @@ app.post('/post-data', async (req, res) => {
       /*
         We parse data into a Json object.
       */
-      parseDataByType(type, data).then(async (resultData) => {
+      parseJSONByType(type, data).then(async (resultData) => {
         const parsedData = { "data": resultData }
           /*
             We create json file in the repository

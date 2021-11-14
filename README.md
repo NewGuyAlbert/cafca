@@ -8,19 +8,19 @@ Second mandatory for System Integration
 3. Run command: node app.js
 
 # routes
-1.  **info route**
-        Method: GET
+1.  **info route** <br />
+        - Method: GET
         /
 
 
-2.   **publisher routes**
+2.   **publisher routes** <br />
         Method: POST
         /create
 
         Method: POST
         /push
 
-3.    **subscriber routes**
+3.    **subscriber routes** <br />
 
         Method: POST
         /subscribe

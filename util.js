@@ -97,7 +97,6 @@ function jsonToXml(data){
     try{
         options = {compact: true, ignoreComment: true, spaces: 0}
         result = json2xml(data, options)
-        result = result.toString()
     } catch(e) {
         result = e
     }

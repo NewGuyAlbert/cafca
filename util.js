@@ -1,6 +1,6 @@
 const parseXml = require('xml2js').parseString;
 const parseCsv = require("csvtojson");
-const json2xml = require('js2xmlparser');
+const json2xml = require('js2xml').Js2Xml;
 const json2csv = require('json2csv');
 const fs = require('fs');
 
@@ -94,9 +94,10 @@ function parseDataByJson(dataType, data){
 function jsonToXml(data){
     let result = ''
     try{
-        result = json2xml.parse(data)
+        result = new json2xml("data", data)
+        result = result.toString()
     } catch(e) {
-        result = "Error parsing into XML form."
+        result = e
     }
     return result
 }

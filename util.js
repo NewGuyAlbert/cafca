@@ -104,14 +104,14 @@ function jsonToXml(data){
 }
 
 function jsonToCsv(data){
-    const jsonData = data.data
+    const jsonData = JSON.parse(data).data
     let headers = Object.keys(jsonData[0])
     const csvData = json2csv.parse(jsonData, headers)
     return csvData
 }
 
 function jsonToTsv(data){
-   const jsonArray = data.data
+   const jsonArray = JSON.parse(data).data
    let tsvResult = ''
    const titles = Object.keys(jsonArray[0])
    titles.forEach( (title, index) => {
@@ -259,7 +259,6 @@ function getJSONFronFile(partition, timestamp){
     const rawdata = fs.readFileSync(fileName)
     const data = JSON.stringify(JSON.parse(rawdata))
 
-    console.log(data)
 
     return data
 
@@ -277,6 +276,3 @@ module.exports = {
     checkForMessage,
     parseDataByJson
 }
-
-const jsonobject = {"data":{"data":{"data":[{"Title":"title a","Price":"10","Note":"this is a note"},{"Title":"title b","Price":"20","Note":"this is another note"},{"Title":"title c","Price":"30","Note":"this is the other note"}]}}}
-console.log(jsonToXml(jsonobject))

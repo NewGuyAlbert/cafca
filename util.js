@@ -4,8 +4,8 @@ const json2xml = require('js2xmlparser');
 const json2csv = require('json2csv');
 const fs = require('fs');
 
-// const test_json = require('./queue/netflix/1635711029660.json')
-// const jsonObj = {"name":"John", "age":30, "car":null}
+
+const testjson = require('./queue/Netflix/1635711029660.json')
 
 function verifyContentType(contentType, data){
 
@@ -44,7 +44,7 @@ function parseToJson(data){
 }
 function xmlToJson(data){
     let payload
-    result = parseXml(data, function (err, result) {
+    result = parseXml(data, {explicitArray : false},  function (err, result) {
         payload = result
     })
     return payload
@@ -95,9 +95,10 @@ function parseDataByJson(dataType, data){
 }
 
 function jsonToXml(data){
+    const parsedata = data.data
     let result = ''
     try{
-        result = json2xml.parse(data)
+        result = json2xml.parse(parsedata)
     } catch(e) {
         result = "Error parsing into XML form."
     }
@@ -125,7 +126,6 @@ function jsonToTsv(data){
        }
        tsvResult += (index !== jsonArray.length-1 ? `${row}\r\n` : `${row}`)
    })
-   console.log('tsv result', tsvResult)
    return tsvResult
 }
 
@@ -179,8 +179,6 @@ function subscribeUser(host, partition){
     const data = fs.readFileSync('subscribers.json');
     let subscribers = JSON.parse(data)
 
-    console.log(subscribers)
-
     let alreadySubscribed = false
     try{
         subscribers.subscriberList[host].forEach(function(data) {
@@ -214,6 +212,61 @@ function subscribeUser(host, partition){
     
 }
 
+function checkIfSubscribed(host, partition){
+
+    const data = fs.readFileSync('subscribers.json')
+    let subscribers = JSON.parse(data)
+
+    let alreadySubscribed = false
+    try{
+        subscribers.subscriberList[host].forEach(function(data) {
+            if(data === partition){
+                alreadySubscribed = true
+                return
+            }
+        })
+    }
+    catch(err){}
+
+    return alreadySubscribed
+}
+
+function checkForMessage(partition, message){
+
+    const testFolder = './queue/' + partition
+
+    let array = []
+
+    data = fs.readdirSync(testFolder).forEach(file => {
+        array.push(file.substring(0, file.length - 5));
+    });
+    
+    if(array[message-1] === undefined){
+        return false
+    }
+    else{
+
+        const timestamp = array[message-1]
+        data = getJSONFronFile(partition, timestamp)
+
+
+        return data
+    }
+
+}
+
+function getJSONFronFile(partition, timestamp){
+
+    const fileName = "./queue/" + partition + "/" + timestamp + ".json"
+    const rawdata = fs.readFileSync(fileName)
+    const data = JSON.stringify(JSON.parse(rawdata))
+
+    console.log(data)
+
+    return data
+
+}
+
 module.exports = {
     verifyContentType, 
     parseJSONByType, 
@@ -221,5 +274,10 @@ module.exports = {
     checkIfPartitionExists,
     createMessage,
     subscribeUser,
+    checkIfSubscribed,
+    parseDataByJson,
+    checkForMessage,
     parseDataByJson
 }
+
+console.log(jsonToXml(testjson))

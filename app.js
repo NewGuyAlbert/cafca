@@ -20,7 +20,7 @@ app.get('/', function (req, res) {
         root: path.join(__dirname)
     };
      
-    const fileName = 'README.md';
+    const fileName = 'info.txt';
     res.sendFile(fileName, options, function (err) {
         if (err) {
             next(err);

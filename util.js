@@ -1,11 +1,9 @@
 const parseXml = require('xml2js').parseString;
 const parseCsv = require("csvtojson");
-const json2xml = require('js2xml').Js2Xml;
+const json2xml = require('xml-js').json2xml;
 const json2csv = require('json2csv');
 const fs = require('fs');
 
-
-const testjson = require('./queue/Netflix/1635711029660.json')
 
 function verifyContentType(contentType, data){
 
@@ -95,10 +93,10 @@ function parseDataByJson(dataType, data){
 }
 
 function jsonToXml(data){
-    const parsedata = data.data
     let result = ''
     try{
-        result = new json2xml("data", data)
+        options = {compact: true, ignoreComment: true, spaces: 0}
+        result = json2xml(data, options)
         result = result.toString()
     } catch(e) {
         result = e
@@ -280,3 +278,6 @@ module.exports = {
     checkForMessage,
     parseDataByJson
 }
+
+const jsonobject = {"data":{"data":{"data":[{"Title":"title a","Price":"10","Note":"this is a note"},{"Title":"title b","Price":"20","Note":"this is another note"},{"Title":"title c","Price":"30","Note":"this is the other note"}]}}}
+console.log(jsonToXml(jsonobject))

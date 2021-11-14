@@ -1,0 +1,44 @@
+=========================
+
+/create
+
+Method: POST
+Info: Creates new partition
+Headers: 
+    • Partition - <partition name>
+Body: none
+
+=========================
+
+/push
+
+Method: POST
+Info: Adds message to partition. Message payload must be raw json, raw xml, multipart/formdata csv file or multipart/formdata tsv file
+Headers: 
+    • Partition - <partition name>
+Body: csv file/tsv file/json/xml
+
+=========================
+
+/subscribe
+
+Method: POST
+Info: Subscribes to a partition. If host is not subscribed to a partition, messages cannot be fetched from it.
+Headers: 
+    • Partition - <partition name>
+Body: none
+
+=========================
+
+/fetch
+
+Method: GET
+Info: Grabs message from partition. Header must contain partition name, the desired message and the desired data format.
+Headers: 
+    • Partition - <partition name>
+    • Index - <nth message>
+    • Return-Data - <json/xml/csv/tsv>
+
+Body: none
+
+=========================

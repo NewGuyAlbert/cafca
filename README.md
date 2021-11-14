@@ -3,21 +3,21 @@ Second mandatory for System Integration
 
 # installation
 
-1. Routes
-    **info route**
+# routes
+1.  **info route**
 
         /
 
-    **publisher router**
+2.   **publisher router**
 
         /create
 
         /push
 
-    **subscriber router**
+3.    **subscriber router**
 
         /subscribe
 
         /fetch
 
-**Call the info route**
+**Call the info route to get started**

@@ -17,18 +17,18 @@ router.get('/fetch', (req, res) => {
     const exists = possibleDataType.find(a => a.includes(desiredDataType))
 
     if(exists === undefined){
-        res.send("Return-Data type must be exactly the following in the header: 'json', 'xml', 'csv', 'tsv'")
+        res.status(400).send("Return-Data type must be exactly the following in the header: 'json', 'xml', 'csv', 'tsv'")
     }
     else if (partition === undefined) {
-        res.send("400 Partition missing from header")
+        res.status(400).send("Partition missing from header")
     }
     else if (!checkIfPartitionExists(partition)) {
-        res.send("400 Partition does not exist")
+        res.status(400).send("Partition does not exist")
     }
     else {
         let result = checkIfSubscribed(host, partition)
         if (result === false) {
-            res.send("User is not subscribed to this topic")
+            res.status(400).send("User is not subscribed to this topic")
         }
         else {
             /*
@@ -37,7 +37,7 @@ router.get('/fetch', (req, res) => {
             result = checkForMessage(partition, messageNo)
 
             if(result === false){
-                res.send("Message out of bounds for that topic")
+                res.status(400).send("Message out of bounds for that topic")
             }
             else{
                 processedData = parseDataByJson(desiredDataType, result)

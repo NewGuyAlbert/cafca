@@ -26,6 +26,7 @@ Method: POST
 Info: Subscribes to a partition. If host is not subscribed to a partition, messages cannot be fetched from it.
 Headers: 
     • Partition - <partition name>
+    • Phone-Number - <phone number>
 Body: none
 
 =========================

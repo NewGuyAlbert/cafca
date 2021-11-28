@@ -1,1 +1,1 @@
-{"subscriberList":{"localhost":["Netflix","Amazon","Bitcoin"],"192.168.0.39":["Netflix","Amazon"]}}
+{"subscriberList":{"localhost":["Netflix","Amazon","Bitcoin","TestTopic"],"192.168.0.39":["Netflix","Amazon"]},"phoneNumbers":{"192.168.0.39":"50252860","localhost":"50252860"}}

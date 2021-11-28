@@ -8,12 +8,16 @@ const {
 router.post('/subscribe', (req, res) => {
     const partition = req.headers['partition']
     const host = req.hostname
+    const phone = req.headers['phone-number']
 
-    if (partition === undefined) {
-        res.send("400 Partition missing from header")
+    if(phone.length != 8 || phone === undefined){
+        res.status(400).send("Phone number missing from header or Phone number is not a 8 digit danish number")
+    }
+    else if(partition === undefined) {
+        res.status(400).send("Partition missing from header")
     }
     else if (!checkIfPartitionExists(partition)) {
-        res.send("400 Partition does not exist")
+        res.status(400).send("Partition does not exist")
     }
     else {
 
@@ -23,12 +27,12 @@ router.post('/subscribe', (req, res) => {
         1 = User already subscribed
         2 = User subscribed succesfully
         */
-        const result = subscribeUser(host, partition)
+        const result = subscribeUser(host, partition, phone)
         if (result === 2) {
             res.sendStatus(200)
         }
         else if (result === 1) {
-            res.send("User already subscribed")
+            res.status(400).send("User already subscribed")
         }
         else {
             res.sendStatus(500)

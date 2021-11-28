@@ -8,7 +8,7 @@ router.post('/create', (req, res) => {
 
     const partition = req.headers['partition']
     if (partition === undefined) {
-        res.send("400 Partition missing from header")
+        res.status(400).send("Partition missing from header")
     }
     else {
 
@@ -16,10 +16,10 @@ router.post('/create', (req, res) => {
         result = createPartition(partition)
 
         if (!result) {
-            res.send("400 Partition already exists")
+            res.status(400).send("Partition already exists")
         }
         else {
-            res.sendStatus(200)
+            res.sendStatus(201)
         }
     }
 })

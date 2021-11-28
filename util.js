@@ -3,6 +3,7 @@ const parseCsv = require("csvtojson");
 const json2xml = require('xml-js').json2xml;
 const json2csv = require('json2csv');
 const fs = require('fs');
+const fatsms = require('./fatsms');
 
 
 function verifyContentType(contentType, data){
@@ -173,7 +174,7 @@ async function createMessage(partition, data){
     })
 }
 
-function subscribeUser(host, partition){
+function subscribeUser(host, partition, phone){
     const data = fs.readFileSync('subscribers.json');
     let subscribers = JSON.parse(data)
 
@@ -192,10 +193,12 @@ function subscribeUser(host, partition){
         return 1
     }
     else if(subscribers.subscriberList[host] === undefined){
+        subscribers.phoneNumbers[host] = phone
         subscribers.subscriberList[host] = [partition]
     }
     else{
-       subscribers.subscriberList[host] = [...subscribers.subscriberList[host], partition]
+        subscribers.phoneNumbers[host] = phone
+        subscribers.subscriberList[host] = [...subscribers.subscriberList[host], partition]
     }
 
     let stringData = JSON.stringify(subscribers)
@@ -264,6 +267,38 @@ function getJSONFronFile(partition, timestamp){
 
 }
 
+function alertUsers(partition){
+
+    const data = fs.readFileSync('subscribers.json');
+    let subscribers = JSON.parse(data)
+    let toEmailList = []
+    let phoneList = []
+
+
+
+    try{
+
+        Object.keys(subscribers.subscriberList).forEach(function(subscriber) {
+
+            subscribers.subscriberList[subscriber].forEach(function(data) {
+                if(data === partition){
+                    toEmailList.push(subscriber)
+                    return
+                }
+            })
+        })
+    }
+    catch(err){}
+
+    toEmailList.forEach(function(data) {
+        phoneList.push(subscribers.phoneNumbers[data])
+    })
+
+    fatsms.sendAllSms(phoneList, partition)
+
+    return;
+}
+
 module.exports = {
     verifyContentType, 
     parseJSONByType, 
@@ -274,5 +309,6 @@ module.exports = {
     checkIfSubscribed,
     parseDataByJson,
     checkForMessage,
-    parseDataByJson
+    parseDataByJson,
+    alertUsers
 }

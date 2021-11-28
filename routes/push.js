@@ -5,6 +5,7 @@ const {
     parseJSONByType,
     checkIfPartitionExists,
     createMessage,
+    alertUsers
 } = require('../util')
 
 router.post('/push', async (req, res) => {
@@ -13,7 +14,7 @@ router.post('/push', async (req, res) => {
     const host = req.hostname
 
     if (!checkIfPartitionExists(partition)) {
-        res.send("400 Partition does not exist")
+        res.status(400).send("Partition does not exist")
     }
     else {
         /*
@@ -46,7 +47,8 @@ router.post('/push', async (req, res) => {
                 */
                 await createMessage(partition, parsedData)
 
-                //TODO Alert subscribers 
+                //alertUser() send message notification to subscribers that new data is in
+                result = alertUsers(partition)
                 res.sendStatus(200)
 
             }).catch(e => {

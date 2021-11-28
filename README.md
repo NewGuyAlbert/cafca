@@ -5,7 +5,8 @@ Second mandatory for System Integration
 
 1. Clone repository
 2. Run command: npm install
-3. Run command: node app.js
+3. Create file "fatsmsKey.js" in the config folder and add your fatsms key
+4. Run command: node app.js
 
 # routes
 1.  **info route** <br />
